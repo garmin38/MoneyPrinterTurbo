@@ -1,0 +1,59 @@
+# Optimized Dockerfile for MoneyPrinterTurbo with Custom Models Support
+# This version is optimized for better caching and smaller image size
+
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /MoneyPrinterTurbo
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+COPY requirements-custom-models.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install custom models dependencies with optimizations
+# Use CPU-only torch to reduce image size (can be overridden for GPU)
+RUN pip install --no-cache-dir \
+    torch==2.0.1+cpu \
+    torchvision==0.15.2+cpu \
+    torchaudio==2.0.2+cpu \
+    --index-url https://download.pytorch.org/whl/cpu
+
+# Install other custom models dependencies
+RUN pip install --no-cache-dir \
+    transformers>=4.30.0 \
+    tokenizers>=0.13.0 \
+    accelerate>=0.20.0 \
+    sentencepiece>=0.1.99 \
+    protobuf>=3.20.0
+
+# Copy application code
+COPY . .
+
+# Create models directory
+RUN mkdir -p models
+
+# Set environment variables
+ENV PYTHONPATH=/MoneyPrinterTurbo
+ENV TRANSFORMERS_CACHE=/MoneyPrinterTurbo/models
+ENV HF_HOME=/MoneyPrinterTurbo/models
+ENV TORCH_HOME=/MoneyPrinterTurbo/models
+
+# Expose ports
+EXPOSE 8080 8501
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/ping || exit 1
+
+# Default command
+CMD ["python", "main.py"]

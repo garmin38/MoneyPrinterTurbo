@@ -1,0 +1,59 @@
+# GPU-optimized Dockerfile for MoneyPrinterTurbo with Custom Models Support
+# This version includes CUDA support for GPU acceleration
+
+FROM nvidia/cuda:11.8-devel-ubuntu22.04
+
+# Install Python 3.11
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y \
+    python3.11 \
+    python3.11-dev \
+    python3.11-distutils \
+    python3-pip \
+    git \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set Python 3.11 as default
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+RUN update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+
+# Set working directory
+WORKDIR /MoneyPrinterTurbo
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+COPY requirements-custom-models.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install custom models dependencies with GPU support
+RUN pip install --no-cache-dir -r requirements-custom-models.txt
+
+# Copy application code
+COPY . .
+
+# Create models directory
+RUN mkdir -p models
+
+# Set environment variables
+ENV PYTHONPATH=/MoneyPrinterTurbo
+ENV TRANSFORMERS_CACHE=/MoneyPrinterTurbo/models
+ENV HF_HOME=/MoneyPrinterTurbo/models
+ENV TORCH_HOME=/MoneyPrinterTurbo/models
+ENV CUDA_VISIBLE_DEVICES=0
+
+# Expose ports
+EXPOSE 8080 8501
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/ping || exit 1
+
+# Default command
+CMD ["python", "main.py"]

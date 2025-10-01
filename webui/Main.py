@@ -238,6 +238,7 @@ if not config.app.get("hide_config", False):
                 "Cloudflare",
                 "ERNIE",
                 "Pollinations",
+                "Custom",
             ]
             saved_llm_provider = config.app.get("llm_provider", "OpenAI").lower()
             saved_llm_provider_index = 0
@@ -393,18 +394,35 @@ if not config.app.get("hide_config", False):
                             - **Model Name**: Use 'openai-fast' or specify a model name
                             """
 
+            if llm_provider == "custom":
+                if not llm_model_name:
+                    llm_model_name = "microsoft/DialoGPT-medium"
+                with llm_helper:
+                    tips = """
+                            ##### Custom Models (Local Hugging Face Models)
+                            - **Model ID**: Hugging Face model identifier (e.g., microsoft/DialoGPT-medium)
+                            - **Device**: auto, cpu, or cuda
+                            - **No API Key Required**: Models run locally without external APIs
+                            - **Benefits**: No rate limits, no costs, complete privacy
+                            """
+
             if tips and config.ui["language"] == "zh":
                 st.warning(
                     "中国用户建议使用 **DeepSeek** 或 **Moonshot** 作为大模型提供商\n- 国内可直接访问，不需要VPN \n- 注册就送额度，基本够用"
                 )
                 st.info(tips)
 
-            st_llm_api_key = st.text_input(
-                tr("API Key"), value=llm_api_key, type="password"
-            )
+            # Custom models don't need API key
+            if llm_provider != "custom":
+                st_llm_api_key = st.text_input(
+                    tr("API Key"), value=llm_api_key, type="password"
+                )
+            else:
+                st_llm_api_key = ""  # Custom models don't need API key
+                
             st_llm_base_url = st.text_input(tr("Base Url"), value=llm_base_url)
             st_llm_model_name = ""
-            if llm_provider != "ernie":
+            if llm_provider not in ["ernie", "custom"]:
                 st_llm_model_name = st.text_input(
                     tr("Model Name"),
                     value=llm_model_name,
@@ -412,6 +430,29 @@ if not config.app.get("hide_config", False):
                 )
                 if st_llm_model_name:
                     config.app[f"{llm_provider}_model_name"] = st_llm_model_name
+            elif llm_provider == "custom":
+                # Custom models use model_id instead of model_name
+                custom_model_id = config.app.get("custom_model_id", "microsoft/DialoGPT-medium")
+                st_llm_model_name = st.text_input(
+                    tr("Model ID"),
+                    value=custom_model_id,
+                    key="custom_model_id_input",
+                    help="Hugging Face model identifier (e.g., microsoft/DialoGPT-medium)"
+                )
+                if st_llm_model_name:
+                    config.app["custom_model_id"] = st_llm_model_name
+                    
+                # Device selection for custom models
+                custom_device = config.app.get("custom_model_device", "auto")
+                device_options = ["auto", "cpu", "cuda"]
+                device_index = device_options.index(custom_device) if custom_device in device_options else 0
+                selected_device = st.selectbox(
+                    tr("Device"),
+                    options=device_options,
+                    index=device_index,
+                    help="Device to run the model on"
+                )
+                config.app["custom_model_device"] = selected_device
             else:
                 st_llm_model_name = None
 

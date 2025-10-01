@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  moneypinterturbo:
+    build:
+      context: .
+      dockerfile: Dockerfile.custom-models
+    ports:
+      - "8080:8080"  # API server
+      - "8501:8501"  # WebUI
+    volumes:
+      - ./storage:/MoneyPrinterTurbo/storage
+      - ./models:/MoneyPrinterTurbo/models  # Custom models storage
+      - ./config.toml:/MoneyPrinterTurbo/config.toml
+      - ./resource:/MoneyPrinterTurbo/resource
+    environment:
+      - PYTHONPATH=/MoneyPrinterTurbo
+      - TRANSFORMERS_CACHE=/MoneyPrinterTurbo/models
+      - HF_HOME=/MoneyPrinterTurbo/models
+      - TORCH_HOME=/MoneyPrinterTurbo/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Resource limits (adjust based on your system)
+    deploy:
+      resources:
+        limits:
+          memory: 8G  # Adjust based on model size
+        reservations:
+          memory: 4G
+
+  # Alternative GPU-enabled service (uncomment to use)
+  # moneypinterturbo-gpu:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.custom-models.gpu
+  #   ports:
+  #     - "8080:8080"
+  #     - "8501:8501"
+  #   volumes:
+  #     - ./storage:/MoneyPrinterTurbo/storage
+  #     - ./models:/MoneyPrinterTurbo/models
+  #     - ./config.toml:/MoneyPrinterTurbo/config.toml
+  #     - ./resource:/MoneyPrinterTurbo/resource
+  #   environment:
+  #     - PYTHONPATH=/MoneyPrinterTurbo
+  #     - TRANSFORMERS_CACHE=/MoneyPrinterTurbo/models
+  #     - HF_HOME=/MoneyPrinterTurbo/models
+  #     - TORCH_HOME=/MoneyPrinterTurbo/models
+  #     - CUDA_VISIBLE_DEVICES=0
+  #   restart: unless-stopped
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 16G
+  #       reservations:
+  #         memory: 8G

@@ -30,6 +30,7 @@ pixabay_api_keys = []
 #   oneapi
 #   cloudflare
 #   ernie       (文心一言)
+#   custom      (本地Hugging Face模型)
 llm_provider = "openai"
 
 ########## Pollinations AI Settings
@@ -71,6 +72,13 @@ oneapi_model_name = ""
 # Visit https://github.com/xtekky/gpt4free to get more details
 # Supported model list: https://github.com/xtekky/gpt4free/blob/main/g4f/models.py
 g4f_model_name = "gpt-3.5-turbo"
+
+########## Custom Models (Local Hugging Face Models)
+# Use local Hugging Face models without API limitations
+# Popular models: microsoft/DialoGPT-medium, microsoft/DialoGPT-large, facebook/blenderbot-400M-distill
+custom_model_id = "microsoft/DialoGPT-medium"
+# Device to run models on: "auto", "cpu", "cuda"
+custom_model_device = "auto"
 
 ########## Azure API Key
 # Visit https://learn.microsoft.com/zh-cn/azure/ai-services/openai/ to get more details

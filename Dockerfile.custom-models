@@ -1,0 +1,46 @@
+# Dockerfile for MoneyPrinterTurbo with Custom Models Support
+# This extends the base Dockerfile to include Hugging Face models dependencies
+
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /MoneyPrinterTurbo
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+COPY requirements-custom-models.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install custom models dependencies
+# Note: This will install torch, transformers, and other ML libraries
+RUN pip install --no-cache-dir -r requirements-custom-models.txt
+
+# Copy application code
+COPY . .
+
+# Create models directory
+RUN mkdir -p models
+
+# Set environment variables
+ENV PYTHONPATH=/MoneyPrinterTurbo
+ENV TRANSFORMERS_CACHE=/MoneyPrinterTurbo/models
+ENV HF_HOME=/MoneyPrinterTurbo/models
+
+# Expose ports
+EXPOSE 8080 8501
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/ping || exit 1
+
+# Default command
+CMD ["python", "main.py"]

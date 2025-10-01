@@ -19,7 +19,19 @@ def _generate_response(prompt: str) -> str:
         content = ""
         llm_provider = config.app.get("llm_provider", "openai")
         logger.info(f"llm provider: {llm_provider}")
-        if llm_provider == "g4f":
+        if llm_provider == "custom":
+            # Use custom local models
+            try:
+                from app.services.custom_models import model_manager
+                model_id = config.app.get("custom_model_id", "microsoft/DialoGPT-medium")
+                if not model_manager.load_model(model_id):
+                    raise Exception(f"Failed to load custom model {model_id}")
+                content = model_manager.generate_text(model_id, prompt)
+            except ImportError as e:
+                raise Exception(f"Custom models not available. Install dependencies: pip install -r requirements-custom-models.txt. Error: {e}")
+            except Exception as e:
+                raise Exception(f"Custom model error: {e}")
+        elif llm_provider == "g4f":
             model_name = config.app.get("g4f_model_name", "")
             if not model_name:
                 model_name = "gpt-3.5-turbo-16k-0613"

@@ -1,0 +1,18 @@
+# Additional requirements for custom models functionality
+# Install with: pip install -r requirements-custom-models.txt
+
+# Core Hugging Face libraries
+transformers>=4.30.0
+torch>=2.0.0
+tokenizers>=0.13.0
+
+# Optional: For better performance with specific models
+accelerate>=0.20.0
+bitsandbytes>=0.39.0
+
+# Optional: For model optimization
+optimum>=1.8.0
+
+# Optional: For specific model types
+sentencepiece>=0.1.99
+protobuf>=3.20.0
