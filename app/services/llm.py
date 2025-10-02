@@ -20,17 +20,9 @@ def _generate_response(prompt: str) -> str:
         llm_provider = config.app.get("llm_provider", "openai")
         logger.info(f"llm provider: {llm_provider}")
         if llm_provider == "custom":
-            # Use custom local models
-            try:
-                from app.services.custom_models import model_manager
-                model_id = config.app.get("custom_model_id", "microsoft/DialoGPT-medium")
-                if not model_manager.load_model(model_id):
-                    raise Exception(f"Failed to load custom model {model_id}")
-                content = model_manager.generate_text(model_id, prompt)
-            except ImportError as e:
-                raise Exception(f"Custom models not available. Install dependencies: pip install -r requirements-custom-models.txt. Error: {e}")
-            except Exception as e:
-                raise Exception(f"Custom model error: {e}")
+            # Use custom local models - this should not be called directly
+            # Custom models are handled by specific functions in custom_models.py
+            raise Exception("Custom models should be called through specific functions, not _generate_response")
         elif llm_provider == "g4f":
             model_name = config.app.get("g4f_model_name", "")
             if not model_name:
@@ -306,6 +298,20 @@ def _generate_response(prompt: str) -> str:
 def generate_script(
     video_subject: str, language: str = "", paragraph_number: int = 1
 ) -> str:
+    # Check if using custom models
+    llm_provider = config.app.get("llm_provider", "openai")
+    if llm_provider == "custom":
+        try:
+            from app.services.custom_models import generate_script_custom
+            model_id = config.app.get("custom_model_id", "microsoft/DialoGPT-medium")
+            return generate_script_custom(video_subject, language, paragraph_number, model_id)
+        except ImportError as e:
+            logger.error(f"Custom models not available: {e}")
+            return f"Error: Custom models not available. Install dependencies: pip install -r requirements-custom-models.txt"
+        except Exception as e:
+            logger.error(f"Custom model error: {e}")
+            return f"Error: {e}"
+
     prompt = f"""
 # Role: Video Script Generator
 
@@ -378,6 +384,20 @@ Generate a script for a video, depending on the subject of the video.
 
 
 def generate_terms(video_subject: str, video_script: str, amount: int = 5) -> List[str]:
+    # Check if using custom models
+    llm_provider = config.app.get("llm_provider", "openai")
+    if llm_provider == "custom":
+        try:
+            from app.services.custom_models import generate_terms_custom
+            model_id = config.app.get("custom_model_id", "microsoft/DialoGPT-medium")
+            return generate_terms_custom(video_subject, video_script, amount, model_id)
+        except ImportError as e:
+            logger.error(f"Custom models not available: {e}")
+            return [f"Error: Custom models not available. Install dependencies: pip install -r requirements-custom-models.txt"]
+        except Exception as e:
+            logger.error(f"Custom model error: {e}")
+            return [f"Error: {e}"]
+
     prompt = f"""
 # Role: Video Search Terms Generator
 

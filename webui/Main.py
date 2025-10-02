@@ -394,9 +394,9 @@ if not config.app.get("hide_config", False):
                             - **Model Name**: Use 'openai-fast' or specify a model name
                             """
 
-            if llm_provider == "custom":
-                if not llm_model_name:
-                    llm_model_name = "microsoft/DialoGPT-medium"
+        if llm_provider == "custom":
+            if not llm_model_name:
+                llm_model_name = "gpt2"
                 with llm_helper:
                     tips = """
                             ##### Custom Models (Local Hugging Face Models)

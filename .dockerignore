@@ -1,24 +1,61 @@
-# Exclude common Python files and directories
-venv/
+# Ignore models directory - models will be downloaded at runtime
+models/
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# Ignore cache directories
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.pyz
-*.pyw
-*.pyi
-*.egg-info/
-
-# Exclude development and local files
-.env
-.env.*
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
 *.log
-*.db
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
 
-# Exclude version control system files
-.git/
-.gitignore
-.svn/
+# Ignore large files
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
 
-storage/
-config.toml
+# Ignore temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

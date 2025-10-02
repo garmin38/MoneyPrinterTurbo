@@ -31,7 +31,7 @@ pixabay_api_keys = []
 #   cloudflare
 #   ernie       (文心一言)
 #   custom      (本地Hugging Face模型)
-llm_provider = "openai"
+llm_provider = "custom"
 
 ########## Pollinations AI Settings
 # Visit https://pollinations.ai/ to learn more
@@ -76,7 +76,7 @@ g4f_model_name = "gpt-3.5-turbo"
 ########## Custom Models (Local Hugging Face Models)
 # Use local Hugging Face models without API limitations
 # Popular models: microsoft/DialoGPT-medium, microsoft/DialoGPT-large, facebook/blenderbot-400M-distill
-custom_model_id = "microsoft/DialoGPT-medium"
+custom_model_id = "gpt2"
 # Device to run models on: "auto", "cpu", "cuda"
 custom_model_device = "auto"
 
